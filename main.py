@@ -39,7 +39,7 @@ class Todolist(QMainWindow):
             self.model.removeRow(selected.row())
 
     def change_note(self):
-        selected2 = self.listView.selectedIndexes()[0]
+        pass
 
 
     def exit_note(self):
