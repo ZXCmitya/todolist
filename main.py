@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QFont, QStandardItemModel, QStandardItem
 from PyQt5 import uic
+from PyQt5.QtCore import Qt
 import sys
 
 class Todolist(QMainWindow):
@@ -21,29 +22,31 @@ class Todolist(QMainWindow):
         self.exitButton.clicked.connect(self.exit_note)
 
     def add_note(self):
-        newtask, confirmed = QInputDialog.getText(self, 'Add Task', 'New Task', QLineEdit.Normal, '')
+        new_task, confirmed = QInputDialog.getText(self, 'Add Task', 'New Task', QLineEdit.Normal, '')
 
-        if confirmed and newtask:
-            addtask = QStandardItem(newtask)
-            self.model.appendRow(addtask)
+        if confirmed and new_task:
+            add_task = QStandardItem(new_task)
+            add_task.setCheckable(True)
+            add_task.setCheckState(Qt.Unchecked)
+            self.model.appendRow(add_task)
+
     def delete_note(self):
-        selected = self.listView.selectedIndexes()[0]
-
-        dialog_delete = QMessageBox()
-        dialog_delete.setText(f"Delete the task '{selected.data()}'?")
-
-        dialog_delete.addButton(QPushButton('yes'), QMessageBox.YesRole)
-        dialog_delete.addButton(QPushButton('no'), QMessageBox.NoRole)
-
-        if dialog_delete.exec_() == 0:
-            self.model.removeRow(selected.row())
+        indexes = self.listView.selectedIndexes()
+        if indexes:
+            index = indexes[0]
+            self.model.removeRow(index.row())
 
     def change_note(self):
-        pass
-
+        indexes = self.listView.selectedIndexes()
+        if indexes:
+            index = indexes[0]
+            new_task, confirmed = QInputDialog.getText(self, 'Edit Task', 'Edit Task', QLineEdit.Normal, '')
+            if confirmed and new_task:
+                item = self.model.itemFromIndex(index)
+                item.setText(new_task)
 
     def exit_note(self):
-        sys.exit(app.exec_())
+        sys.exit()
 
 app = QApplication([])
 window = Todolist()
