@@ -31,3 +31,7 @@ def get_uncompleted_tasks():
 
 def update_task(id, new_task):
     db_todolist.update_task(id, new_task)
+
+
+def close():
+    db_todolist.close()
