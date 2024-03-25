@@ -15,21 +15,21 @@ def create_table():
 
 
 def add_task(task):
-    db.execute("INSERT INTO todo (task) VALUES (?)", (task,))
+    db.execute("INSERT INTO todo (task) VALUES (?)", [task])
     db.commit()
 
 
 def delete_task(id):
-    db.execute("DELETE FROM todo WHERE id=?", (id,))
+    db.execute("DELETE FROM todo WHERE id=?", [id])
     db.commit()
 
 
 def complete_task(id):
-    db.execute("UPDATE todo SET completed=1 WHERE id=?", (id,))
+    db.execute("UPDATE todo SET completed=1 WHERE id=?", [id])
 
 
 def uncomplete_task(id):
-    db.execute("UPDATE todo SET completed=0 WHERE id=?", (id,))
+    db.execute("UPDATE todo SET completed=0 WHERE id=?", [id])
 
 
 def get_tasks():
@@ -59,14 +59,14 @@ def get_uncompleted_tasks():
 
 def get_task(id):
     needed_task = []
-    task = db.execute("SELECT * FROM todo WHERE id=?", (id,))
+    task = db.execute("SELECT * FROM todo WHERE id=?", [id])
     for t in task:
         needed_task.append(t)
     return needed_task
 
 
 def update_task(id, new_task):
-    db.execute("UPDATE todo SET task=? WHERE id=?", (new_task, id))
+    db.execute("UPDATE todo SET task=? WHERE id=?", [new_task, id])
     db.commit()
 
 
