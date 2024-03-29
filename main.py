@@ -5,14 +5,48 @@ from PyQt5.QtCore import Qt
 import sys
 import api
 
-class Todolist(QMainWindow):
+class TaskManager:
+    def __init__(self):
+        self.task_data = []
 
+    def add_task(self, task_id, index, completed=False):
+        self.task_data.append((task_id, index, completed))
+
+    def delete_task(self, index):
+        for i, (_, task_index, _) in enumerate(self.task_data):
+            if task_index == index:
+                del self.task_data[i]
+                return
+
+    def update_indexes_after_deletion(self, deleted_index):
+        for i, (task_id, index, completed) in enumerate(self.task_data):
+            if index > deleted_index:
+                self.task_data[i] = (task_id, index-1, completed)
+
+    def get_id_by_index(self, index):
+        for task_id, task_index, _ in self.task_data:
+            if task_index == index:
+                return task_id
+        return None
+
+    def clear(self):
+        self.task_data.clear()
+
+    def task_state_changed(self, task_id, completed):
+        for i, (id, index, _) in enumerate(self.task_data):
+            if id == task_id:
+                self.task_data[i] = (id, index, completed)
+                break
+
+
+class Todolist(QMainWindow):
     def __init__(self):
         super(Todolist, self).__init__()
         uic.loadUi("untitled.ui", self)
         self.show()
 
         self.setFixedSize(458, 569)
+        self.task_manager = TaskManager()
 
         self.model = QStandardItemModel()
         self.listView.setModel(self.model)
@@ -22,55 +56,60 @@ class Todolist(QMainWindow):
         self.changeButton.clicked.connect(self.change_note)
         self.exitButton.clicked.connect(self.exit_note)
 
-
         self.load_tasks()
 
     def load_tasks(self):
+        self.task_manager.clear()
         tasks = api.get_tasks()
-        for task in tasks:
+        for index, task in enumerate(tasks):
             item = QStandardItem(task[1])
             item.setCheckable(True)
-            if task[2] == 1:
-                item.setCheckState(Qt.Checked)
-            else:
-                item.setCheckState(Qt.Unchecked)
+            item.setCheckState(Qt.Checked if task[2] == 1 else Qt.Unchecked)
             self.model.appendRow(item)
+            self.task_manager.add_task(task[0], index, task[2] == 1)
 
     def task_state_changed(self, item):
-        index = self.model.indexFromItem(item)
-        task_id = index.row() + 1
-        if item.checkState() == Qt.Checked:
-            api.complete_task(task_id)
-        else:
-            api.uncomplete_task(task_id)
+        index = self.model.indexFromItem(item).row()
+        task_id = self.task_manager.get_id_by_index(index)
+        if task_id is not None:
+            completed = item.checkState() == Qt.Checked
+            if completed:
+                success = api.complete_task(task_id)
+            else:
+                success = api.uncomplete_task(task_id)
+            if success:
+                self.task_manager.task_state_changed(task_id, completed)
 
     def add_note(self):
         new_task, confirmed = QInputDialog.getText(self, 'Add task', 'New task', QLineEdit.Normal, '')
-
         if confirmed and new_task:
-            add_task = QStandardItem(new_task)
-            add_task.setCheckable(True)
-            add_task.setCheckState(Qt.Unchecked)
-            self.model.appendRow(add_task)
-            api.add_task(new_task)
+            task_id = api.add_task(new_task)
+            item = QStandardItem(new_task)
+            item.setCheckable(True)
+            item.setCheckState(Qt.Unchecked)
+            self.model.appendRow(item)
+            self.task_manager.add_task(task_id, self.model.rowCount() - 1, False)
 
     def delete_note(self):
         indexes = self.listView.selectedIndexes()
         if indexes:
-            index = indexes[0]
-            self.model.removeRow(index.row())
-            api.delete_task(index.row() + 1)
+            index = indexes[0].row()
+            task_id = self.task_manager.get_id_by_index(index)
+            api.delete_task(task_id)
+            self.model.removeRow(index)
+            self.task_manager.delete_task(index)
+            self.task_manager.update_indexes_after_deletion(index)
 
     def change_note(self):
         indexes = self.listView.selectedIndexes()
         if indexes:
-            index = indexes[0]
+            index = indexes[0].row()
+            task_id = self.task_manager.get_id_by_index(index)
             new_task, confirmed = QInputDialog.getText(self, 'Change Task', 'Change Task', QLineEdit.Normal, '')
             if confirmed and new_task:
-                item = self.model.itemFromIndex(index)
+                item = self.model.itemFromIndex(indexes[0])
                 item.setText(new_task)
-                api.update_task(index.row() + 1, new_task)
-
+                api.update_task(task_id, new_task)
     def exit_note(self):
         api.close()
         sys.exit()
