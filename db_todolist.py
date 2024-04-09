@@ -22,10 +22,12 @@ def delete_task(id: int):
 
 def complete_task(id: int):
     db.execute("UPDATE todo SET completed=1 WHERE id=?", [id])
+    db.commit()
 
 
 def uncomplete_task(id : int):
     db.execute("UPDATE todo SET completed=0 WHERE id=?", [id])
+    db.commit()
 
 
 def get_task_by_id(id: int):
