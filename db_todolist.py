@@ -1,7 +1,7 @@
 import sqlite3
-import pydantic_todolist
 
 db = sqlite3.connect('todo.db')
+
 
 
 def create_table():
@@ -15,20 +15,20 @@ def create_table():
     """)
 
 
-def delete_task(pyd.Task['id']):
+def delete_task(id: int):
     db.execute("DELETE FROM todo WHERE id=?", [id])
     db.commit()
 
 
-def complete_task(pyd.id):
+def complete_task(id: int):
     db.execute("UPDATE todo SET completed=1 WHERE id=?", [id])
 
 
-def uncomplete_task(pyd.id):
+def uncomplete_task(id : int):
     db.execute("UPDATE todo SET completed=0 WHERE id=?", [id])
 
 
-def get_task_by_id(id: pydantic_todolist.Task['id']):
+def get_task_by_id(id: int):
     needed_task = []
     task = db.execute("SELECT * FROM todo WHERE id=?", [id])
     for t in task:
@@ -36,7 +36,7 @@ def get_task_by_id(id: pydantic_todolist.Task['id']):
     return needed_task
 
 
-def add_task(task: pydantic_todolist.Task):
+def add_task(task: str):
     db.execute("INSERT INTO todo (task) VALUES (?)", [task])
     db.commit()
 
@@ -66,9 +66,15 @@ def get_uncompleted_tasks():
     return list_of_uncompleted_tasks
 
 
-def update_task(
-        id: pydantic_todolist.Task['id'],
-        new_task: pydantic_todolist.Task['task']):
+
+
+def delete_all_tasks():
+    db.execute("DELETE FROM todo")
+    db.commit()
+
+
+
+def update_task(id: int, new_task: str):
     db.execute("UPDATE todo SET task=? WHERE id=?", [new_task, id])
     db.commit()
 
