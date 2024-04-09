@@ -4,7 +4,6 @@ import pydantic_todolist
 db = sqlite3.connect('todo.db')
 
 
-
 def create_table():
     db.execute("""
         CREATE TABLE "todo" (
@@ -67,10 +66,9 @@ def get_uncompleted_tasks():
     return list_of_uncompleted_tasks
 
 
-
-
-
-def update_task(id: pydantic_todolist.Task['id'], new_task: pydantic_todolist.Task['task']):
+def update_task(
+        id: pydantic_todolist.Task['id'],
+        new_task: pydantic_todolist.Task['task']):
     db.execute("UPDATE todo SET task=? WHERE id=?", [new_task, id])
     db.commit()
 
