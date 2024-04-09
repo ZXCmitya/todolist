@@ -6,7 +6,7 @@ def get_tasks():
     return db_todolist.get_tasks()
 
 
-def add_task(task):
+def add_task_and_set_complete_parameter(task):
     print(f'Adding task: {task}')
     db_todolist.add_task(task)
 
