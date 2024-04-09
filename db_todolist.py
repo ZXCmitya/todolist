@@ -36,8 +36,8 @@ def get_task_by_id(id: int):
     return needed_task
 
 
-def add_task(task: str):
-    db.execute("INSERT INTO todo (task) VALUES (?)", [task])
+def add_task_and_set_complete_parameter(task: str):
+    db.execute("INSERT INTO todo (task, completed) VALUES (?, ?)", [task, 0])
     db.commit()
 
 
