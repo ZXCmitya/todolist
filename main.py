@@ -33,11 +33,16 @@ class TaskManager:
         self.task_data.clear()
 
     def task_state_changed(self, task_id, completed):
-        for i, (id, index, _) in enumerate(self.task_data):
-            if id == task_id:
-                self.task_data[i] = (id, index, completed)
-                break
+        if completed:
+            success = api.complete_task(task_id)
+        else:
+            success = api.uncomplete_task(task_id)
 
+        if success:
+            for i, (id, index, _) in enumerate(self.task_data):
+                if id == task_id:
+                    self.task_data[i] = (id, index, completed)
+                    break
 
 class Todolist(QMainWindow):
     def __init__(self):
@@ -52,6 +57,7 @@ class Todolist(QMainWindow):
         self.listView.setModel(self.model)
         self.model.itemChanged.connect(self.task_state_changed)
         self.addButton.clicked.connect(self.add_note)
+        self.clearAllButton.clicked.connect(self.clear_all_notes)
         self.deleteButton.clicked.connect(self.delete_note)
         self.changeButton.clicked.connect(self.change_note)
         self.exitButton.clicked.connect(self.exit_note)
@@ -83,7 +89,7 @@ class Todolist(QMainWindow):
     def add_note(self):
         new_task, confirmed = QInputDialog.getText(self, 'Add task', 'New task', QLineEdit.Normal, '')
         if confirmed and new_task:
-            task_id = api.add_task(new_task)
+            task_id = api.add_task_and_set_complete_parameter(new_task)
             item = QStandardItem(new_task)
             item.setCheckable(True)
             item.setCheckState(Qt.Unchecked)
@@ -99,6 +105,13 @@ class Todolist(QMainWindow):
             self.model.removeRow(index)
             self.task_manager.delete_task(index)
             self.task_manager.update_indexes_after_deletion(index)
+
+    def clear_all_notes(self):
+        confirmation = QMessageBox.question(self, "Confirmation", "Are you sure you want to delete all notes?", QMessageBox.Yes | QMessageBox.No)
+        if confirmation == QMessageBox.Yes:
+            self.model.clear()
+            self.task_manager.clear()
+            api.delete_all_tasks()
 
     def change_note(self):
         indexes = self.listView.selectedIndexes()
