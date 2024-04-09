@@ -6,9 +6,9 @@ def get_tasks():
     return db_todolist.get_tasks()
 
 
-def add_task(task):
+def add_task_and_set_complete_parameter(task):
     print(f'Adding task: {task}')
-    db_todolist.add_task(task)
+    db_todolist.add_task_and_set_complete_parameter(task)
 
 
 def delete_task(id):
@@ -39,6 +39,11 @@ def get_uncompleted_tasks():
 def update_task(id, new_task):
     print(f'Updating task with id: {id} to {new_task}')
     db_todolist.update_task(id, new_task)
+
+
+def delete_all_tasks():
+    print('Deleting all tasks')
+    db_todolist.delete_all_tasks()
 
 
 def close():

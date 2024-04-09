@@ -3,6 +3,7 @@ import sqlite3
 db = sqlite3.connect('todo.db')
 
 
+
 def create_table():
     db.execute("""
         CREATE TABLE "todo" (
@@ -14,22 +15,32 @@ def create_table():
     """)
 
 
-def add_task(task):
-    db.execute("INSERT INTO todo (task) VALUES (?)", [task])
-    db.commit()
-
-
-def delete_task(id):
+def delete_task(id: int):
     db.execute("DELETE FROM todo WHERE id=?", [id])
     db.commit()
 
 
-def complete_task(id):
+def complete_task(id: int):
     db.execute("UPDATE todo SET completed=1 WHERE id=?", [id])
+    db.commit()
 
 
-def uncomplete_task(id):
+def uncomplete_task(id : int):
     db.execute("UPDATE todo SET completed=0 WHERE id=?", [id])
+    db.commit()
+
+
+def get_task_by_id(id: int):
+    needed_task = []
+    task = db.execute("SELECT * FROM todo WHERE id=?", [id])
+    for t in task:
+        needed_task.append(t)
+    return needed_task
+
+
+def add_task_and_set_complete_parameter(task: str):
+    db.execute("INSERT INTO todo (task, completed) VALUES (?, ?)", [task, 0])
+    db.commit()
 
 
 def get_tasks():
@@ -57,15 +68,15 @@ def get_uncompleted_tasks():
     return list_of_uncompleted_tasks
 
 
-def get_task(id):
-    needed_task = []
-    task = db.execute("SELECT * FROM todo WHERE id=?", [id])
-    for t in task:
-        needed_task.append(t)
-    return needed_task
 
 
-def update_task(id, new_task):
+def delete_all_tasks():
+    db.execute("DELETE FROM todo")
+    db.commit()
+
+
+
+def update_task(id: int, new_task: str):
     db.execute("UPDATE todo SET task=? WHERE id=?", [new_task, id])
     db.commit()
 
